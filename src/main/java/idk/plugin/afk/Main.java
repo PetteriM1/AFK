@@ -6,6 +6,7 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import java.util.*;
 
@@ -20,24 +21,38 @@ public class Main extends PluginBase implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-            afkers.remove(e.getPlayer().getName());
+        afkers.remove(e.getPlayer().getName());
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent e) {
+        if (!e.getFrom().equals(e.getTo())) {
+            Player p = e.getPlayer();
+            String name = p.getName();
+            if (afkers.contains(name)) {
+                afkers.remove(name);
+                p.setDisplayName(name);
+                p.sendPopup("\u00A76You are no longer AFK");
+                this.getServer().broadcastMessage("\u00A72" + name + " is no longer AFK");
+            }
+        }
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (sender instanceof Player) {
-            Player p = (Player)sender;
+            Player p = (Player) sender;
             String name = p.getName();
             if (cmd.getName().equalsIgnoreCase("afk")) {
                 if (afkers.contains(name)) {
                     afkers.remove(name);
                     p.setDisplayName(name);
-                    p.sendMessage("\u00A76You are no longer AFK");
+                    p.sendPopup("\u00A76You are no longer AFK");
                     this.getServer().broadcastMessage("\u00A72" + name + " is no longer AFK");
                     return true;
                 } else {
                     afkers.add(name);
                     p.setDisplayName("\u00A7c[AFK] " + name);
-                    p.sendMessage("\u00A76You are now AFK");
+                    p.sendPopup("\u00A76You are now AFK");
                     this.getServer().broadcastMessage("\u00A7c" + name + " is now AFK");
                     return true;
                 }
