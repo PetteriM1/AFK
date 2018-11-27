@@ -6,9 +6,12 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main extends PluginBase implements Listener {
 
@@ -29,6 +32,7 @@ public class Main extends PluginBase implements Listener {
         if (!e.getFrom().equals(e.getTo())) {
             Player p = e.getPlayer();
             String name = p.getName();
+
             if (afkers.contains(name)) {
                 afkers.remove(name);
                 p.setDisplayName(name);
@@ -38,10 +42,18 @@ public class Main extends PluginBase implements Listener {
         }
     }
 
+    @EventHandler
+    public void onDamage(EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player && afkers.contains(e.getEntity().getName())) {
+            e.setCancelled(true);
+        }
+    }
+
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (sender instanceof Player) {
             Player p = (Player) sender;
             String name = p.getName();
+
             if (cmd.getName().equalsIgnoreCase("afk")) {
                 if (afkers.contains(name)) {
                     afkers.remove(name);
@@ -58,6 +70,7 @@ public class Main extends PluginBase implements Listener {
                 }
             }
         }
+
         return true;
     }
 }
